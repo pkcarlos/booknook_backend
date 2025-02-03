@@ -39,19 +39,22 @@ let books = [
     "id": "7",
     "title": "A Little Life",
     "author": "Hanya Yanagihara",
-    "genre": "Fiction"
+    "genre": "Fiction",
+    "favorite": false
   },
   {
     "id": "8",
     "title": "Babel",
     "author": "R.F. Kuang",
-    "genre": "Sci-Fi/Fantasy"
+    "genre": "Sci-Fi/Fantasy",
+    "favorite": false
   },
   {
     "id": "9",
     "title": "The GOldfish",
     "author": "Donna Tart",
-    "genre": "Fiction"
+    "genre": "Fiction",
+    "favorite": false
   }
 ]
 
@@ -107,6 +110,8 @@ app.post('/api/books', (request, response) => {
       .end()
   } else {
     book.id = generateId()
+    book.genre = book.genre || ''
+    book.favorite = book.favorite || false
     books = books.concat(book)
     response.json(book)
   }
@@ -119,7 +124,7 @@ app.post('/api/books', (request, response) => {
 
 //   if (book) {
 //     // toggle favorite
-//     book.
+//     book.favorite = !book.favorite
 //     response.json(book)
 //   } else {
 //     response.status(404).end()
