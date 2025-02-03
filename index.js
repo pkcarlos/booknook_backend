@@ -55,14 +55,6 @@ let books = [
   }
 ]
 
-app.get('/', (request, response) => {
-  response.send('<h1>Hello World</h1>')
-})
-
-app.get('/info', (request, response) => {
-  response.send(`<p>BookNook has info for ${books.length} books.</p>`)
-})
-
 app.get('/api/books', (request, response) => {
   response.json(books)
 })
@@ -80,9 +72,16 @@ app.get('/api/books/:id', (request, response) => {
 
 app.delete('/api/books/:id', (request, response) => {
   const id = request.params.id
+  const book = books.find(b => b.id === id)
   books = books.filter(book => book.id !== id)
 
-  response.status(204).end()
+  if (book) {
+    response.status(204).end()
+  } else (
+    response.status(400)
+      .send({ error: 'book has already been deleted' })
+      .end()
+  )
 })
 
 app.post('/api/books', (request, response) => {
@@ -112,6 +111,20 @@ app.post('/api/books', (request, response) => {
     response.json(book)
   }
 })
+
+// toggle favorite
+// app.put('/api/books/:id', (request, response) => {
+//   const id = request.params.id
+//   const book = books.find(b => b.id === id)
+
+//   if (book) {
+//     // toggle favorite
+//     book.
+//     response.json(book)
+//   } else {
+//     response.status(404).end()
+//   }
+// })
 
 const PORT = process.env.PORT || 3001
 app.listen(PORT, () => {
