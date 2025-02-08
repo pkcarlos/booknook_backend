@@ -15,8 +15,14 @@ mongoose.connect(url)
   })
 
 const bookSchema = new mongoose.Schema({
-  title: String,
-  author: String,
+  title: {
+    type: String,
+    required: true
+  },
+  author: {
+    type: String,
+    required: true
+  },
   genre: String,
   favorite: Boolean,
 })

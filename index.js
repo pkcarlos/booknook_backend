@@ -33,8 +33,8 @@ app.delete('/api/books/:id', (request, response) => {
   .catch(error => next(error))
 })
 
-app.post('/api/books', (request, response) => {
-  const book = request.body
+app.post('/api/books', (request, response, next) => {
+  const body = request.body
 
   const duplicate = (book) => {
     const books = Book.find({}).then(books => {
@@ -43,25 +43,23 @@ app.post('/api/books', (request, response) => {
     })
   }
 
-  if (!book.title || !book.author) {
-    response.status(404)
-      .send({ error: 'title and author must be included' })
-      .end()
-  } else if (duplicate(book)) {
+  const newBook = new Book({
+    title: body.title,
+    author: body.author,
+    genre: body.genre || '',
+    favorite: false
+  })
+  
+  if (duplicate(newBook)) {
     response.status(404)
       .send({ error: 'book title and author already exist' })
       .end()
   } else {
-    const newBook = new Book({
-      title: book.title,
-      author: book.author,
-      genre: book.genre || '',
-      favorite: false
-    })
-
-    newBook.save().then(savedBook => {
+    newBook.save()
+    .then(savedBook => {
       response.json(savedBook)
     })
+    .catch(error => next(error))
   }
 })
 
@@ -86,6 +84,8 @@ const errorHandler = (error, request, response, next) => {
 
   if (error.name === 'CastError') {
     return response.status(400).send({ error: 'malformatted id' })
+  } else if (error.name == 'ValidationError') {
+    return response.status(400).json({ error: error.message })
   }
 
   next(error)
