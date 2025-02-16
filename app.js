@@ -1,5 +1,6 @@
 const config = require('./utils/config')
 const express = require('express')
+require('express-async-errors') // eliminate try/catch blocks
 const app = express()
 const cors = require('cors')
 const notesRouter = require('./controllers/books')

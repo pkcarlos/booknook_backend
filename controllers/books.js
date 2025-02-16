@@ -1,38 +1,32 @@
 const booksRouter = require('express').Router()
 const Book = require('../models/book')
 
-booksRouter.get('/', (request, response) => {
-  Book.find({}).then(books => {
-    response.json(books)
-  })
+booksRouter.get('/', async (request, response) => {
+  const books = await Book.find({})
+  response.status(200).json(books)
 })
 
-booksRouter.get('/:id', (request, response) => {
-  Book.findById(request.params.id).then(book => {
-    if (book) {
-      response.json(book)
-    } else (
-      response.status(404).end()
-    )
-  })
-  .catch(error => next(error))
+booksRouter.get('/:id', async (request, response, next) => {
+  const book = await Book.findById(request.params.id)
+
+  if (book) {
+    response.status(200).json(book)
+  } else (
+    response.status(404).end()
+  )
 })
 
-booksRouter.delete('/:id', (request, response) => {
-  Book.findByIdAndDelete(request.params.id).then(book => {
-    response.status(204).end()
-  })
-  .catch(error => next(error))
+booksRouter.delete('/:id', async (request, response, next) => {
+  await Book.findByIdAndDelete(request.params.id)
+  response.status(204).end()
 })
 
-booksRouter.post('/', (request, response, next) => {
+booksRouter.post('/', async (request, response, next) => {
   const body = request.body
 
-  const duplicate = (book) => {
-    const books = Book.find({}).then(books => {
-      console.log(books)
-      return books.filter(b => b.title === book.title && b.author === b.author).length > 0
-    })
+  const duplicate = async (book) => {
+    const duplicate = await Book.findOne({ title: { $regex: new RegExp(`^${book.title}$`, 'i') }, author: book.author })
+    return duplicate
   }
 
   const newBook = new Book({
@@ -42,27 +36,23 @@ booksRouter.post('/', (request, response, next) => {
     favorite: false
   })
   
-  if (duplicate(newBook)) {
-    response.status(404)
+  if (await duplicate(newBook)) {
+    response.status(400)
       .send({ error: 'book title and author already exist' })
       .end()
   } else {
-    newBook.save()
-    .then(savedBook => {
-      response.json(savedBook)
-    })
-    .catch(error => next(error))
+    const savedBook = await newBook.save()
+    response.status(201).json(savedBook)
   }
 })
 
-booksRouter.put('/:id', (request, response) => {
+// add test for toggling favorite
+booksRouter.put('/:id', async (request, response) => {
   const body = request.body
   const book = { ...body, favorite: body.favorite }
 
-  Book.findByIdAndUpdate(request.params.id, book, { new: true }).then(updatedBook => {
-    response.json(updatedBook)
-  })
-  .catch(error => next(error))
+  const updatedBook = await Book.findByIdAndUpdate(request.params.id, book, { new: true })
+  response.status(200).json(updatedBook)
 })
 
 module.exports = booksRouter
